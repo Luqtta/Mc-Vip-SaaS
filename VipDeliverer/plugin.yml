@@ -1,0 +1,5 @@
+name: VipDeliverer
+main: com.avelar.vipdeliverer.VipDelivererPlugin
+version: 1.0.0
+author: Avelar
+load: POSTWORLD

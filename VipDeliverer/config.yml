@@ -1,0 +1,19 @@
+api:
+  baseUrl: "http://localhost:3000"
+  token: "dev_8f2c5a7b1c0d4e9f9b4a4b1b2e3d4c5a"
+  serverId: "default"
+  instanceId: "9d3c5e76-61c6-4f1b-9b7f-2e6a4a1f8c2d"
+  pollSeconds: 5
+  leaseSeconds: 60
+
+broadcast:
+  enabled: true
+  prefix: "&9[VIP]&r "
+  line1: "{player} adquiriu o &6{product}"
+  line2: "Digite &e/site&r para adquirir o seu e ter &6vantagens exclusivas."
+
+sound:
+  enabled: true
+  name: "AMBIENCE_THUNDER"
+  volume: 1.0
+  pitch: 1.0

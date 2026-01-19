@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+enum OrderStatus {
+  pending
+  paid
+  delivered
+  failed
+}
+
+enum DeliveryStatus {
+  pending
+  processing
+  delivered
+  failed
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  priceCents       Int
+  currency         String   @default("BRL")
+  durationDays     Int
+  deliveryCommands Json     // ex: ["givevip {nick} vip {days}"]
+  active           Boolean  @default(true)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  orders           Order[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  productId       String
+  product         Product     @relation(fields: [productId], references: [id])
+
+  playerNick      String
+  serverId        String      @default("default")
+
+  status          OrderStatus @default(pending)
+
+  amountCents     Int
+  currency        String      @default("BRL")
+
+  mpPreferenceId  String?
+  mpPaymentId     String?     @unique
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  paidAt          DateTime?
+  deliveredAt     DateTime?
+
+  deliveries      Delivery[]
+
+  @@index([status])
+  @@index([mpPreferenceId])
+}
+
+model Delivery {
+  id            String         @id @default(cuid())
+  orderId       String         @unique
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  serverId      String         @default("default")
+  status        DeliveryStatus @default(pending)
+
+  attempts      Int            @default(0)
+  lastError     String?
+  lastErrorCode String?
+
+  // Claim/Lease
+  leaseUntil    DateTime?
+  lockedBy      String?
+
+  // Retry/backoff
+  nextAttemptAt DateTime?
+
+  payload       Json
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deliveredAt   DateTime?
+  failedAt      DateTime?
+
+  @@index([serverId, status])
+  @@index([leaseUntil])
+  @@index([nextAttemptAt])
+}
+
+model PaymentEvent {
+  id          String   @id @default(cuid())
+  provider    String   @default("mercadopago")
+  type        String?
+  resourceId  String
+  raw         Json
+  processed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+
+  @@index([resourceId])
+  @@unique([provider, resourceId])
+}
